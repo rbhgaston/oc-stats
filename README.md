@@ -2,10 +2,11 @@
 
 # oc-stats
 
-**Your OpenCode usage, cost and latency — at a glance, in the terminal.**
+**Your OpenCode usage, cost and latency — live in the sidebar, detailed on demand.**
 
-A fast, local dashboard for [OpenCode](https://opencode.ai): a session-first sidebar panel
-and a full `/stats` window with trends, projects, models and latency.
+The built-in `opencode stats` gives you totals. **oc-stats** adds what it cannot: a live
+per-session spend panel, per-project and per-session breakdowns, and model latency with
+p50/p95/p99 — all inside the TUI.
 No telemetry. No account. No database writes.
 
 [![OpenCode 2.2.5+](https://img.shields.io/badge/opencode-2.2.5%2B-9a83e6?style=flat-square)](https://opencode.ai)
@@ -13,7 +14,7 @@ No telemetry. No account. No database writes.
 [![License: MIT](https://img.shields.io/badge/license-MIT-f5a742?style=flat-square)](LICENSE)
 [![No telemetry](https://img.shields.io/badge/telemetry-none-f7768e?style=flat-square)](#privacy)
 
-<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/preview.svg" alt="The oc-stats sidebar panel next to the Overview dashboard" width="100%">
+<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/sidebar.svg" alt="The oc-stats Stats panel in the right-hand session sidebar" width="100%">
 
 </div>
 
@@ -59,9 +60,21 @@ Add it to `plugins` in `~/.config/opencode/cli.json`:
 | 📈 **See the trend** | Daily heatmap, sparkline and a comparison with the previous period. |
 | 🔒 **Trust the numbers** | Local-only. Talks to your OpenCode server, nothing else. |
 
-## The sidebar
+### How it compares
 
-<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/sidebar.svg" alt="The oc-stats panel in the session sidebar" width="300" align="right">
+| | `opencode stats` | **oc-stats** |
+| --- | :---: | :---: |
+| Totals and daily activity heatmap | ✅ | ✅ |
+| Live sidebar while you work | — | ✅ |
+| Session spend split (output / input / cache) | — | ✅ |
+| Per-project and per-session breakdown | — | ✅ |
+| Cost, cache hit and cache savings | `--cost` | ✅ |
+| TTFT, p50/p95/p99 latency and output tok/s | — | ✅ |
+| Click a row to open the session | — | ✅ |
+| TUI dialog with tabs and ranges | — | ✅ |
+| Local-only, no telemetry | ✅ | ✅ |
+
+## The sidebar
 
 The sidebar is ordered from local to global, so the number you care about is always first:
 
@@ -76,9 +89,11 @@ Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
 Click `Stats` to fold or unfold the panel, click the underlined range in the **Range** header
 to cycle it, or click `open /stats` for the full dashboard.
 
-<br clear="all">
-
 ## The dashboard
+
+<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/preview.svg" alt="The oc-stats /stats dialog showing the Overview tab" width="100%">
+
+`/stats` opens a centered, clickable dialog with three tabs.
 
 ### Overview
 

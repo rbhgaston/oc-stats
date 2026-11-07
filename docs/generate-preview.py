@@ -65,15 +65,14 @@ def line(x1: float, y1: float, x2: float, y2: float, stroke: str = BORDER, opaci
     return f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" opacity="{opacity}"/>'
 
 
-def chrome(width: int, height: int, title: str) -> list[str]:
+def window_bar(width: int, title: str) -> list[str]:
     parts = [
-        rect(0, 0, width, height, BG, rx=16, stroke=BORDER),
-        rect(0, 0, width, 46, PANEL_2),
-        '<path d="M0 46 H' + str(width) + '" stroke="' + BORDER + '"/>',
+        rect(0, 0, width, 44, PANEL_2),
+        line(0, 44, width, 44, BORDER),
+        text(24, 28, "opencode", MUTED, 11.5, 600, spacing=0.6),
+        text(120, 28, title, TEXT, 13, 600),
+        text(width - 24, 28, "esc", MUTED, 11.5, anchor="end"),
     ]
-    for index, color in enumerate(("#ff5f57", "#febc2e", "#28c840")):
-        parts.append(f'<circle cx="{24 + index * 20}" cy="23" r="6" fill="{color}"/>')
-    parts.append(text(width / 2, 28, title, MUTED, 12.5, anchor="middle"))
     return parts
 
 
@@ -289,44 +288,70 @@ def overview(x: float, y: float, width: float) -> list[str]:
 
 
 def preview() -> str:
-    width, height = 1200, 850
-    sidebar_w = 320
-    parts = chrome(width, height, "opencode  ·  oc-stats")
-    parts.append(rect(0, 46, sidebar_w, height - 46, PANEL))
-    parts.append(line(sidebar_w, 46, sidebar_w, height, BORDER))
-    parts.append(rect(sidebar_w + 1, 46, width - sidebar_w - 1, height - 46, BG))
-
-    parts.append(text(24, 82, "Session", MUTED, 11.5, 600, spacing=0.6))
-    parts.append(text(24, 106, "Build the usage dashboard", TEXT, 13.5, 600))
-    parts.append(text(24, 130, "~/projects/oc-stats", MUTED, 11.5))
-    parts.append(line(24, 148, sidebar_w - 24, 148, BORDER, 0.7))
-
-    parts.append(text(24, 176, "Context", MUTED, 11.5))
-    parts.append(rect(96, 166, 190, 8, DIM, rx=4))
-    parts.append(rect(96, 166, 128, 8, TEAL, rx=4))
-    parts.append(text(24, 200, "Todo", MUTED, 11.5))
-    parts.append(text(96, 200, "3 open · 1 done", TEXT, 12))
-    parts.append(line(24, 220, sidebar_w - 24, 220, BORDER, 0.7))
-
-    parts += stats_panel(24, 230, sidebar_w - 48)
-    parts.append(line(24, 690, sidebar_w - 24, 690, BORDER, 0.7))
-    parts.append(text(24, 716, "Files", MUTED, 11.5, 600, spacing=0.4))
-    parts.append(text(24, 738, "M tui.tsx        +64", MUTED, 11.5))
-    parts.append(text(24, 758, "M sidebar.tsx    +31", MUTED, 11.5))
-    parts.append(text(24, 778, "? docs/", MUTED, 11.5))
-
-    parts += overview(356, 84, 808)
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc"><title id="title">oc-stats dashboard</title><desc id="desc">OpenCode usage, cost and latency dashboard with the session sidebar panel and the Overview tab.</desc>' + "".join(parts) + "</svg>"
+    """The /stats dialog, as it appears over a session."""
+    width, height = 1200, 900
+    parts = [
+        rect(52, 34, 1096, 842, "#000000", rx=24, opacity=0.45),
+        rect(60, 40, 1080, 820, PANEL, rx=18, stroke=BORDER),
+    ]
+    parts += overview(120, 110, 960)
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc"><title id="title">oc-stats /stats dialog</title><desc id="desc">The centered /stats dialog from OpenCode, showing the Overview tab with totals, latency, a daily cost heatmap, previous-period comparison and top models.</desc>' + "".join(parts) + "</svg>"
 
 
 def closeup() -> str:
-    width, height = 360, 560
-    parts = [rect(0, 0, width, height, PANEL, rx=12, stroke=BORDER)]
-    parts.append(text(20, 34, "oc-stats", ACCENT, 12, 700, spacing=0.8))
-    parts.append(text(20, 58, "session sidebar", MUTED, 11))
-    parts.append(line(20, 72, width - 20, 72, BORDER, 0.7))
-    parts += stats_panel(20, 100, width - 40, compact=True)
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title"><title id="title">oc-stats sidebar panel</title>' + "".join(parts) + "</svg>"
+    """A session view with the real right-hand sidebar and the Stats panel."""
+    width, height = 1200, 760
+    sidebar_x = 870
+    parts = [rect(0, 0, width, height, BG)]
+    parts += window_bar(width, "Build the usage dashboard")
+
+    parts.append(rect(sidebar_x, 44, width - sidebar_x, height - 44, PANEL))
+    parts.append(line(sidebar_x, 44, sidebar_x, height, BORDER))
+
+    # Chat transcript, muted so the sidebar stays the focus.
+    parts.append(rect(40, 80, 560, 64, PANEL_2, rx=10))
+    parts.append(text(60, 106, "Make the sidebar numbers match the dashboard.", TEXT, 12.5))
+    parts.append(text(60, 126, "and add a spend bar.", MUTED, 12))
+
+    parts.append(rect(40, 164, 660, 124, PANEL, rx=10, stroke=BORDER, opacity=0.7))
+    parts.append(text(60, 192, "I'll wire the session stats in first.", TEXT, 12.5))
+    parts.append(text(60, 218, "ctx.data.session.get(sessionID)", MUTED, 11.5))
+    parts.append(text(60, 240, "  cost · tokens · model", MUTED, 11.5))
+    parts.append(text(60, 262, "then split the spend by token type.", MUTED, 11.5))
+
+    parts.append(rect(40, 308, 430, 46, PANEL_2, rx=8))
+    parts.append(text(58, 336, "shell", ACCENT, 11.5, 600))
+    parts.append(text(110, 336, "143ms", MUTED, 11.5))
+    parts.append(text(170, 336, "✓", SUCCESS, 11.5, 600))
+
+    parts.append(rect(40, 374, 520, 88, PANEL, rx=8, stroke=BORDER, opacity=0.6))
+    parts.append(text(60, 400, "+ cached   196.5m  97%", SUCCESS, 11.5))
+    parts.append(text(60, 422, "+ input      5.6m  billed", TEXT, 11.5))
+    parts.append(text(60, 444, "+ output     359k", TEXT, 11.5))
+
+    parts.append(rect(40, 660, 790, 58, BG, rx=12, stroke=ACCENT, opacity=0.9))
+    parts.append(text(60, 695, "> /stats", ACCENT, 13, 600))
+    parts.append(text(760, 695, "enter to open", MUTED, 11.5, anchor="end"))
+
+    # Right sidebar: session details, then the Stats panel.
+    parts.append(text(sidebar_x + 24, 80, "Session", MUTED, 11.5, 600, spacing=0.6))
+    parts.append(text(sidebar_x + 24, 104, "Build the usage dashboard", TEXT, 13, 600))
+    parts.append(text(sidebar_x + 24, 128, "~/projects/oc-stats", MUTED, 11.5))
+    parts.append(line(sidebar_x + 24, 146, width - 24, 146, BORDER, 0.7))
+    parts.append(text(sidebar_x + 24, 174, "Context", MUTED, 11.5))
+    parts.append(rect(sidebar_x + 96, 164, 190, 8, DIM, rx=4))
+    parts.append(rect(sidebar_x + 96, 164, 128, 8, TEAL, rx=4))
+    parts.append(text(sidebar_x + 24, 198, "Todo", MUTED, 11.5))
+    parts.append(text(sidebar_x + 96, 198, "3 open · 1 done", TEXT, 12))
+    parts.append(line(sidebar_x + 24, 218, width - 24, 218, BORDER, 0.7))
+
+    parts += stats_panel(sidebar_x + 24, 240, width - sidebar_x - 48)
+    parts.append(line(sidebar_x + 24, 700, width - 24, 700, BORDER, 0.7))
+    parts.append(text(sidebar_x + 24, 726, "Files", MUTED, 11.5, 600, spacing=0.4))
+    parts.append(text(sidebar_x + 24, 746, "M tui.tsx        +64", MUTED, 11.5))
+    parts.append(text(sidebar_x + 200, 746, "M sidebar.tsx", MUTED, 11.5))
+
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc"><title id="title">oc-stats in the session sidebar</title><desc id="desc">An OpenCode session with the oc-stats Stats panel in the right-hand sidebar, showing session, project and range totals plus a spend bar.</desc>' + "".join(parts) + "</svg>"
 
 
 if __name__ == "__main__":
