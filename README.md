@@ -203,6 +203,8 @@ remote OpenCode server.
 ```bash
 git clone https://github.com/rbhgaston/oc-stats.git ~/.config/opencode/plugins/oc-stats
 cd ~/.config/opencode/plugins/oc-stats
+npm install
+npm run typecheck
 ```
 
 Edit the source, then run `/reload` in OpenCode to pick up the changes.
