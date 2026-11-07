@@ -1,6 +1,6 @@
 {
   "name": "oc-stats-tui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A colorful usage, cost and latency dashboard for OpenCode's terminal UI.",
   "license": "MIT",
   "author": "oc-stats contributors",
@@ -41,6 +41,7 @@
     "data.ts",
     "format.ts",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "dependencies": {
