@@ -156,7 +156,7 @@ def stats_panel(x: float, y: float, width: float, compact: bool = False) -> list
     parts.append(text(x, y, "Steps", MUTED, 12.5))
     parts.append(text(x + 64, y, "▁▂▄▅▇█▇▆▅▃▂▁▂▄▅▆▇█", ACCENT, 13))
     y += 26
-    parts.append(text(x, y, "open /stats ↗", ACCENT, 12.5, 600))
+    parts.append(text(x, y, "open /oc_stats ↗", ACCENT, 12.5, 600))
     return parts
 
 
@@ -288,14 +288,14 @@ def overview(x: float, y: float, width: float) -> list[str]:
 
 
 def preview() -> str:
-    """The /stats dialog, as it appears over a session."""
+    """The /oc_stats dialog, as it appears over a session."""
     width, height = 1200, 900
     parts = [
         rect(52, 34, 1096, 842, "#000000", rx=24, opacity=0.45),
         rect(60, 40, 1080, 820, PANEL, rx=18, stroke=BORDER),
     ]
     parts += overview(120, 110, 960)
-    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc"><title id="title">oc-stats /stats dialog</title><desc id="desc">The centered /stats dialog from OpenCode, showing the Overview tab with totals, latency, a daily cost heatmap, previous-period comparison and top models.</desc>' + "".join(parts) + "</svg>"
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc"><title id="title">oc-stats /oc_stats dialog</title><desc id="desc">The centered /oc_stats dialog from OpenCode, showing the Overview tab with totals, latency, a daily cost heatmap, previous-period comparison and top models.</desc>' + "".join(parts) + "</svg>"
 
 
 def closeup() -> str:
@@ -330,7 +330,7 @@ def closeup() -> str:
     parts.append(text(60, 444, "+ output     359k", TEXT, 11.5))
 
     parts.append(rect(40, 660, 790, 58, BG, rx=12, stroke=ACCENT, opacity=0.9))
-    parts.append(text(60, 695, "> /stats", ACCENT, 13, 600))
+    parts.append(text(60, 695, "> /oc_stats", ACCENT, 13, 600))
     parts.append(text(760, 695, "enter to open", MUTED, 11.5, anchor="end"))
 
     # Right sidebar: session details, then the Stats panel.

@@ -2,7 +2,7 @@
 /**
  * oc-stats: a native usage dashboard for OpenCode.
  *
- * `/stats` (or the command palette) opens a window with three tabs:
+ * `/oc_stats` (or the command palette) opens a window with three tabs:
  * Overview, Projects and Performance. Everything is read from OpenCode's own
  * API through context.client; no database access and no server plugin.
  */
@@ -1150,7 +1150,7 @@ const plugin = Plugin.define({
           description: "Global, per-project and per-session usage, cost and latency",
           group: "Stats",
           palette: true,
-          slash: { name: "stats", aliases: ["usage-stats"] },
+          slash: { name: "oc_stats" },
           run: open,
         },
       ],

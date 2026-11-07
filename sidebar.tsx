@@ -4,7 +4,7 @@
  *
  * It is intentionally cheap: a `experimental.session.stats` request for the selected range,
  * one more for the previous range, and one scoped to the current project. No message fetching.
- * The full `/stats` window remains the place for projects, sessions and latency detail.
+ * The full `/oc_stats` window remains the place for projects, sessions and latency detail.
  */
 import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js"
 import {
@@ -381,7 +381,7 @@ export function StatsSidebar(props: {
           fg={theme().text.action.primary.selected}
           onMouseUp={props.openStats}
         >
-          open /stats ↗
+          open /oc_stats ↗
         </text>
       </Show>
     </box>

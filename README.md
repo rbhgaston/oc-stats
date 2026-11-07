@@ -27,7 +27,7 @@ opencode plugin add oc-stats-tui
 Reload OpenCode (`/reload`), then type:
 
 ```bash
-/stats
+/oc_stats
 ```
 
 > Requires OpenCode **2.2.5+**. `oc-stats-tui` is a TUI plugin, so the CLI adds it to
@@ -87,13 +87,13 @@ The sidebar is ordered from local to global, so the number you care about is alw
 Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
 
 Click `Stats` to fold or unfold the panel, click the underlined range in the **Range** header
-to cycle it, or click `open /stats` for the full dashboard.
+to cycle it, or click `open /oc_stats` for the full dashboard.
 
 ## The dashboard
 
-<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/preview.svg" alt="The oc-stats /stats dialog showing the Overview tab" width="100%">
+<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/preview.svg" alt="The oc-stats /oc_stats dialog showing the Overview tab" width="100%">
 
-`/stats` opens a centered, clickable dialog with three tabs.
+`/oc_stats` opens a centered, clickable dialog with three tabs.
 
 ### Overview
 
