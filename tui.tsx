@@ -418,6 +418,9 @@ function ModelsTable(props: { d: Dashboard; theme: any }) {
   const models = props.d.models.slice(0, 10)
   const width = useContentWidth()
   const compact = () => width() < 84
+  const [hovered, setHovered] = createSignal<string | undefined>()
+  const [pinned, setPinned] = createSignal<string | undefined>()
+  const full = () => hovered() ?? pinned()
   return (
     <Section title="Models" theme={props.theme}>
       <box paddingLeft={1}>
@@ -433,9 +436,21 @@ function ModelsTable(props: { d: Dashboard; theme: any }) {
             <box
               paddingLeft={1}
               paddingRight={1}
-              backgroundColor={index() % 2 ? props.theme.background.raised.base : undefined}
+              backgroundColor={
+                pinned() === model.label || hovered() === model.label
+                  ? props.theme.background.raised.high
+                  : index() % 2
+                    ? props.theme.background.raised.base
+                    : undefined
+              }
             >
-              <text wrapMode="none" selectable={false}>
+              <text
+                wrapMode="none"
+                selectable={false}
+                onMouseOver={() => setHovered(model.label)}
+                onMouseOut={() => setHovered(undefined)}
+                onMouseUp={() => setPinned((current) => (current === model.label ? undefined : model.label))}
+              >
                 <span style={{ fg: props.theme.text.base }}>{compact() ? pad(truncate(model.label, 25), 26) : pad(truncate(model.label, 40), 41)}</span>
                 <span style={{ fg: props.theme.hue.accent[500] }}>{pad(String(model.steps), compact() ? 6 : 8)}</span>
                 <span style={{ fg: props.theme.text.base }}>{pad(fmtTokens(totalTokens(model.tokens)), compact() ? 8 : 10)}</span>
@@ -445,6 +460,23 @@ function ModelsTable(props: { d: Dashboard; theme: any }) {
             </box>
           )}
         </For>
+      </Show>
+      <Show when={models.length > 0}>
+        <box paddingLeft={1} height={2} flexDirection="column">
+          <Show
+            when={full()}
+            fallback={
+              <text fg={props.theme.text.muted} wrapMode="none" selectable={false}>
+                hover a model for its full name · click to pin
+              </text>
+            }
+          >
+            <text wrapMode="word" selectable={false} fg={props.theme.text.muted}>
+              {`${compact() ? "full" : "full name"}  `}
+              <span style={{ fg: props.theme.text.base }}>{full()}</span>
+            </text>
+          </Show>
+        </box>
       </Show>
     </Section>
   )

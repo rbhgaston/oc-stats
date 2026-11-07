@@ -101,6 +101,8 @@ to cycle it, or click `open /oc_stats` for the full dashboard.
 - Sessions, subagents, prompts, steps, active days and streak.
 - A heatmap you can switch between **cost**, **tokens** and **steps**.
 - Daily sparkline, top models and previous-period comparison.
+- Long model names: hover a row for its full name, or click it to pin the name while you
+  compare rows.
 
 ### Projects
 
