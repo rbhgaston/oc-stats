@@ -193,8 +193,8 @@ function StatText(props: {
 }) {
   return (
     <text wrapMode="none" selectable={false}>
-      <span fg={props.theme.text.muted}>{pad(props.label, props.labelWidth ?? 14)}</span>
-      <span fg={props.accent ?? props.theme.text.base}>{pad(props.value, props.valueWidth ?? 14)}</span>
+      <span style={{ fg: props.theme.text.muted }}>{pad(props.label, props.labelWidth ?? 14)}</span>
+      <span style={{ fg: props.accent ?? props.theme.text.base }}>{pad(props.value, props.valueWidth ?? 14)}</span>
     </text>
   )
 }
@@ -260,8 +260,8 @@ function Hints(props: { items: Array<[string, string]>; theme: any }) {
       <For each={props.items}>
         {([key, label]) => (
           <text wrapMode="none" selectable={false}>
-            <span fg={props.theme.hue.accent[500]} attributes={TextAttributes.BOLD}>{key}</span>
-            <span fg={props.theme.text.muted}>{` ${label}`}</span>
+            <span style={{ fg: props.theme.hue.accent[500], bold: true }}>{key}</span>
+            <span style={{ fg: props.theme.text.muted }}>{` ${label}`}</span>
           </text>
         )}
       </For>
@@ -313,10 +313,10 @@ function KpiGrid(props: { d: Dashboard; theme: any }) {
               backgroundColor={index() % 2 ? props.theme.background.raised.base : undefined}
             >
               <text wrapMode="none" selectable={false}>
-                <span fg={props.theme.text.muted}>{pad(label, 12)}</span>
-                <span fg={valueColor(label)}>{pad(value, 14)}</span>
-                <span fg={props.theme.text.muted}>{pad(label2, 12)}</span>
-                <span fg={valueColor(label2)}>{value2}</span>
+                <span style={{ fg: props.theme.text.muted }}>{pad(label, 12)}</span>
+                <span style={{ fg: valueColor(label) }}>{pad(value, 14)}</span>
+                <span style={{ fg: props.theme.text.muted }}>{pad(label2, 12)}</span>
+                <span style={{ fg: valueColor(label2) }}>{value2}</span>
               </text>
             </box>
           )}
@@ -382,7 +382,7 @@ function Spark(props: { d: Dashboard; metric: Metric; theme: any }) {
     <box flexDirection="column" marginTop={2}>
       <text attributes={TextAttributes.BOLD} fg={props.theme.hue.accent[500]}>{`Daily ${props.metric}`}</text>
       <text fg={props.theme.hue.accent[500]} selectable={false}>{sparkline(props.d, props.metric)}</text>
-      <text fg={props.theme.text.muted} wrapMode="none">last 30 days · <span fg={props.theme.text.feedback.success.base}>{formatMetric(metricValue(props.d.daily[dayKey(props.d.window.to)], props.metric), props.metric)}</span> today</text>
+      <text fg={props.theme.text.muted} wrapMode="none">last 30 days · <span style={{ fg: props.theme.text.feedback.success.base }}>{formatMetric(metricValue(props.d.daily[dayKey(props.d.window.to)], props.metric), props.metric)}</span> today</text>
     </box>
   )
 }
@@ -396,19 +396,19 @@ function Comparison(props: { d: Dashboard; theme: any }) {
     <box flexDirection="column" marginTop={2}>
       <text attributes={TextAttributes.BOLD} fg={props.theme.hue.accent[500]}>Compared with the previous period</text>
       <text wrapMode="none" selectable={false}>
-        <span fg={props.theme.text.muted}>{pad("Cost", 12)}</span>
-        <span fg={props.theme.text.feedback.success.base}>{pad(`${usd(previous.cost)} → ${usd(current.cost)}`, 28)}</span>
-        <span fg={costChange > 0 ? props.theme.text.feedback.warning.base : props.theme.text.feedback.success.base}>{delta(current.cost, previous.cost)}</span>
+        <span style={{ fg: props.theme.text.muted }}>{pad("Cost", 12)}</span>
+        <span style={{ fg: props.theme.text.feedback.success.base }}>{pad(`${usd(previous.cost)} → ${usd(current.cost)}`, 28)}</span>
+        <span style={{ fg: costChange > 0 ? props.theme.text.feedback.warning.base : props.theme.text.feedback.success.base }}>{delta(current.cost, previous.cost)}</span>
       </text>
       <text wrapMode="none" selectable={false}>
-        <span fg={props.theme.text.muted}>{pad("Tokens", 12)}</span>
-        <span fg={props.theme.text.base}>{`${fmtTokens(previous.tokens)} → ${fmtTokens(totalTokens(current.tokens))}`}</span>
-        <span fg={props.theme.hue.accent[500]}>{`  ${delta(totalTokens(current.tokens), previous.tokens)}`}</span>
+        <span style={{ fg: props.theme.text.muted }}>{pad("Tokens", 12)}</span>
+        <span style={{ fg: props.theme.text.base }}>{`${fmtTokens(previous.tokens)} → ${fmtTokens(totalTokens(current.tokens))}`}</span>
+        <span style={{ fg: props.theme.hue.accent[500] }}>{`  ${delta(totalTokens(current.tokens), previous.tokens)}`}</span>
       </text>
       <text wrapMode="none" selectable={false}>
-        <span fg={props.theme.text.muted}>{pad("Prompts", 12)}</span>
-        <span fg={props.theme.text.base}>{`${fmtTokens(previous.prompts)} → ${fmtTokens(current.prompts)}`}</span>
-        <span fg={props.theme.text.muted}>{`  ${delta(current.prompts, previous.prompts)}`}</span>
+        <span style={{ fg: props.theme.text.muted }}>{pad("Prompts", 12)}</span>
+        <span style={{ fg: props.theme.text.base }}>{`${fmtTokens(previous.prompts)} → ${fmtTokens(current.prompts)}`}</span>
+        <span style={{ fg: props.theme.text.muted }}>{`  ${delta(current.prompts, previous.prompts)}`}</span>
       </text>
     </box>
   )
@@ -436,11 +436,11 @@ function ModelsTable(props: { d: Dashboard; theme: any }) {
               backgroundColor={index() % 2 ? props.theme.background.raised.base : undefined}
             >
               <text wrapMode="none" selectable={false}>
-                <span fg={props.theme.text.base}>{compact() ? pad(truncate(model.label, 25), 26) : pad(truncate(model.label, 40), 41)}</span>
-                <span fg={props.theme.hue.accent[500]}>{pad(String(model.steps), compact() ? 6 : 8)}</span>
-                <span fg={props.theme.text.base}>{pad(fmtTokens(totalTokens(model.tokens)), compact() ? 8 : 10)}</span>
-                <span fg={props.theme.text.feedback.success.base}>{pad(usd(model.cost), 9)}</span>
-                {!compact() ? <span fg={props.theme.text.feedback.success.base}>{usd(model.cacheSavings)}</span> : null}
+                <span style={{ fg: props.theme.text.base }}>{compact() ? pad(truncate(model.label, 25), 26) : pad(truncate(model.label, 40), 41)}</span>
+                <span style={{ fg: props.theme.hue.accent[500] }}>{pad(String(model.steps), compact() ? 6 : 8)}</span>
+                <span style={{ fg: props.theme.text.base }}>{pad(fmtTokens(totalTokens(model.tokens)), compact() ? 8 : 10)}</span>
+                <span style={{ fg: props.theme.text.feedback.success.base }}>{pad(usd(model.cost), 9)}</span>
+                {!compact() ? <span style={{ fg: props.theme.text.feedback.success.base }}>{usd(model.cacheSavings)}</span> : null}
               </text>
             </box>
           )}
@@ -554,8 +554,8 @@ function SessionDetail(props: {
         <For each={slow()}>
           {(call) => (
             <text wrapMode="none" selectable={false}>
-              <span fg={call.duration > 60_000 ? props.theme.text.feedback.warning.base : props.theme.text.muted}>{`  ${pad(duration(call.duration), 8)}${pad(shortProvider(call.model), 28)}`}</span>
-              <span fg={props.theme.text.base}>{`${fmtTokens(call.tokens.output)} out  ${usd(call.cost)}`}</span>
+              <span style={{ fg: call.duration > 60_000 ? props.theme.text.feedback.warning.base : props.theme.text.muted }}>{`  ${pad(duration(call.duration), 8)}${pad(shortProvider(call.model), 28)}`}</span>
+              <span style={{ fg: props.theme.text.base }}>{`${fmtTokens(call.tokens.output)} out  ${usd(call.cost)}`}</span>
             </text>
           )}
         </For>
@@ -565,8 +565,8 @@ function SessionDetail(props: {
         <For each={recent()}>
           {(call) => (
             <text wrapMode="none" selectable={false}>
-              <span fg={props.theme.text.muted}>{`  ${pad(dateTime(call.end), 17)}`}</span>
-              <span fg={props.theme.text.base}>{`${pad(shortProvider(call.model), 27)}${pad(duration(call.duration), 8)}${pad(fmtTokens(totalTokens(call.tokens)), 8)}${usd(call.cost)}`}</span>
+              <span style={{ fg: props.theme.text.muted }}>{`  ${pad(dateTime(call.end), 17)}`}</span>
+              <span style={{ fg: props.theme.text.base }}>{`${pad(shortProvider(call.model), 27)}${pad(duration(call.duration), 8)}${pad(fmtTokens(totalTokens(call.tokens)), 8)}${usd(call.cost)}`}</span>
             </text>
           )}
         </For>
@@ -576,8 +576,8 @@ function SessionDetail(props: {
         <For each={children()}>
           {(child) => (
             <text wrapMode="none" selectable={false}>
-              <span fg={props.theme.text.muted}>{`  ↳ ${pad(truncate(child.title, 42), 44)}`}</span>
-              <span fg={props.theme.text.base}>{`${usd(child.cost)}  ${fmtTokens(totalTokens(child.tokens))}`}</span>
+              <span style={{ fg: props.theme.text.muted }}>{`  ↳ ${pad(truncate(child.title, 42), 44)}`}</span>
+              <span style={{ fg: props.theme.text.base }}>{`${usd(child.cost)}  ${fmtTokens(totalTokens(child.tokens))}`}</span>
             </text>
           )}
         </For>
@@ -774,28 +774,28 @@ function Performance(props: { d: Dashboard; theme: any; openSession: (id: string
       <box flexDirection="column">
         <text attributes={TextAttributes.BOLD} fg={props.theme.hue.accent[500]}>Latency</text>
         <text wrapMode="word" selectable={false}>
-          <span fg={props.theme.text.muted}>{pad("TTFT", 16)}</span>
-          <span fg={props.theme.text.base}>{`p50 ${duration(latency.ttft.p50)} · p95 ${duration(latency.ttft.p95)} · p99 ${duration(latency.ttft.p99)} · ${latency.ttft.count} calls`}</span>
+          <span style={{ fg: props.theme.text.muted }}>{pad("TTFT", 16)}</span>
+          <span style={{ fg: props.theme.text.base }}>{`p50 ${duration(latency.ttft.p50)} · p95 ${duration(latency.ttft.p95)} · p99 ${duration(latency.ttft.p99)} · ${latency.ttft.count} calls`}</span>
         </text>
         <text wrapMode="word" selectable={false}>
-          <span fg={props.theme.text.muted}>{pad("Call duration", 16)}</span>
-          <span fg={props.theme.text.base}>{`p50 ${duration(latency.duration.p50)} · p95 ${duration(latency.duration.p95)} · p99 ${duration(latency.duration.p99)} · ${latency.duration.count} calls`}</span>
+          <span style={{ fg: props.theme.text.muted }}>{pad("Call duration", 16)}</span>
+          <span style={{ fg: props.theme.text.base }}>{`p50 ${duration(latency.duration.p50)} · p95 ${duration(latency.duration.p95)} · p99 ${duration(latency.duration.p99)} · ${latency.duration.count} calls`}</span>
         </text>
         <text wrapMode="word" selectable={false}>
-          <span fg={props.theme.text.muted}>{pad("Step duration", 16)}</span>
-          <span fg={props.theme.text.base}>{`p50 ${duration(latency.step.p50)} · p95 ${duration(latency.step.p95)} · p99 ${duration(latency.step.p99)} · includes tools`}</span>
+          <span style={{ fg: props.theme.text.muted }}>{pad("Step duration", 16)}</span>
+          <span style={{ fg: props.theme.text.base }}>{`p50 ${duration(latency.step.p50)} · p95 ${duration(latency.step.p95)} · p99 ${duration(latency.step.p99)} · includes tools`}</span>
         </text>
         <text wrapMode="word" selectable={false}>
-          <span fg={props.theme.text.muted}>{pad("Output speed", 16)}</span>
-          <span fg={props.theme.text.base}>{`p50 ${latency.outputSpeed.p50?.toFixed(0) ?? "—"} tok/s · p95 ${latency.outputSpeed.p95?.toFixed(0) ?? "—"} tok/s`}</span>
+          <span style={{ fg: props.theme.text.muted }}>{pad("Output speed", 16)}</span>
+          <span style={{ fg: props.theme.text.base }}>{`p50 ${latency.outputSpeed.p50?.toFixed(0) ?? "—"} tok/s · p95 ${latency.outputSpeed.p95?.toFixed(0) ?? "—"} tok/s`}</span>
         </text>
         <text wrapMode="word" selectable={false}>
-          <span fg={props.theme.text.muted}>{pad("Tool duration", 16)}</span>
-          <span fg={props.theme.text.base}>{`p50 ${duration(latency.toolDuration.p50)} · p95 ${duration(latency.toolDuration.p95)} · ${latency.toolDuration.count} calls`}</span>
+          <span style={{ fg: props.theme.text.muted }}>{pad("Tool duration", 16)}</span>
+          <span style={{ fg: props.theme.text.base }}>{`p50 ${duration(latency.toolDuration.p50)} · p95 ${duration(latency.toolDuration.p95)} · ${latency.toolDuration.count} calls`}</span>
         </text>
         <text wrapMode="word" selectable={false}>
-          <span fg={props.theme.text.muted}>{pad("Session time", 16)}</span>
-          <span fg={props.theme.text.base}>{`wall ${duration(props.d.totals.wall)} · busy ${duration(props.d.totals.busy)} · idle ${duration(props.d.totals.idle)}`}</span>
+          <span style={{ fg: props.theme.text.muted }}>{pad("Session time", 16)}</span>
+          <span style={{ fg: props.theme.text.base }}>{`wall ${duration(props.d.totals.wall)} · busy ${duration(props.d.totals.busy)} · idle ${duration(props.d.totals.idle)}`}</span>
         </text>
         <text fg={props.theme.text.muted} wrapMode="word">Output speed is higher-is-better; the rest are lower-is-better. Percentiles exclude calls over 10 minutes.</text>
       </box>

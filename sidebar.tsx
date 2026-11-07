@@ -7,7 +7,6 @@
  * The full `/stats` window remains the place for projects, sessions and latency detail.
  */
 import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js"
-import { TextAttributes } from "@opentui/core"
 import {
   dayKey,
   loadPriceMap,
@@ -63,10 +62,10 @@ function Row(props: {
 }) {
   return (
     <text wrapMode="none" selectable={false}>
-      <span fg={props.theme.text.muted}>{pad(props.label, 8)}</span>
-      <span fg={props.color ?? props.theme.text.base}>{props.value}</span>
+      <span style={{ fg: props.theme.text.muted }}>{pad(props.label, 8)}</span>
+      <span style={{ fg: props.color ?? props.theme.text.base }}>{props.value}</span>
       <Show when={props.note}>
-        <span fg={props.noteColor ?? props.theme.text.muted}>{`  ${props.note}`}</span>
+        <span style={{ fg: props.noteColor ?? props.theme.text.muted }}>{`  ${props.note}`}</span>
       </Show>
     </text>
   )
@@ -79,7 +78,7 @@ function Header(props: {
   color: any
   note?: string
   noteColor?: any
-  noteAttributes?: number
+  noteStyle?: { bold?: boolean; underline?: boolean }
   width: number
   onPress?: () => void
 }) {
@@ -87,14 +86,13 @@ function Header(props: {
   const rule = () => "─".repeat(Math.max(0, props.width - left().length))
   return (
     <text wrapMode="none" selectable={false} onMouseDown={props.onPress}>
-      <span fg={props.color} attributes={TextAttributes.BOLD}>{props.label}</span>
+      <span style={{ fg: props.color, bold: true }}>{props.label}</span>
       <Show when={props.note}>
-        <span
-          fg={props.noteColor ?? props.theme.text.muted}
-          attributes={props.noteAttributes ?? TextAttributes.NONE}
-        >{` ${props.note}`}</span>
+        <span style={{ fg: props.noteColor ?? props.theme.text.muted, ...props.noteStyle }}>
+          {` ${props.note}`}
+        </span>
       </Show>
-      <span fg={props.theme.text.muted}>{` ${rule()}`}</span>
+      <span style={{ fg: props.theme.text.muted }}>{` ${rule()}`}</span>
     </text>
   )
 }
@@ -126,23 +124,23 @@ function CostBar(props: { theme: any; width: number; split: CostSplit }) {
   return (
     <box flexDirection="column">
       <text wrapMode="none" selectable={false}>
-        <span fg={props.theme.text.muted}>{pad("Spend", 8)}</span>
+        <span style={{ fg: props.theme.text.muted }}>{pad("Spend", 8)}</span>
         <Show
           when={props.split.total > 0}
-          fallback={<span fg={props.theme.text.muted}>{"░".repeat(cells())}</span>}
+          fallback={<span style={{ fg: props.theme.text.muted }}>{"░".repeat(cells())}</span>}
         >
-          <span fg={colors()[0]}>{"█".repeat(parts()[0])}</span>
-          <span fg={colors()[1]}>{"█".repeat(parts()[1])}</span>
-          <span fg={colors()[2]}>{"█".repeat(parts()[2])}</span>
+          <span style={{ fg: colors()[0] }}>{"█".repeat(parts()[0])}</span>
+          <span style={{ fg: colors()[1] }}>{"█".repeat(parts()[1])}</span>
+          <span style={{ fg: colors()[2] }}>{"█".repeat(parts()[2])}</span>
         </Show>
       </text>
       <text wrapMode="none" selectable={false}>
-        <span fg={props.theme.text.muted}>{"        "}</span>
-        <span fg={colors()[0]}>{`out ${pct(share(values()[0]))}`}</span>
-        <span fg={props.theme.text.muted}>{" · "}</span>
-        <span fg={colors()[1]}>{`in ${pct(share(values()[1]))}`}</span>
-        <span fg={props.theme.text.muted}>{" · "}</span>
-        <span fg={colors()[2]}>{`cache ${pct(share(values()[2]))}`}</span>
+        <span style={{ fg: props.theme.text.muted }}>{"        "}</span>
+        <span style={{ fg: colors()[0] }}>{`out ${pct(share(values()[0]))}`}</span>
+        <span style={{ fg: props.theme.text.muted }}>{" · "}</span>
+        <span style={{ fg: colors()[1] }}>{`in ${pct(share(values()[1]))}`}</span>
+        <span style={{ fg: props.theme.text.muted }}>{" · "}</span>
+        <span style={{ fg: colors()[2] }}>{`cache ${pct(share(values()[2]))}`}</span>
       </text>
     </box>
   )
@@ -278,7 +276,7 @@ export function StatsSidebar(props: {
     >
       <box flexDirection="row" flexShrink={0}>
         <text wrapMode="none" selectable={false} onMouseDown={toggle}>
-          <b fg={theme().hue.accent[500]}>Stats</b>
+          <b style={{ fg: theme().hue.accent[500] }}>Stats</b>
         </text>
         <text wrapMode="none" selectable={false} fg={theme().text.muted} onMouseDown={toggle}>
           {props.state.open ? " ▾" : " ▸"}
@@ -340,7 +338,7 @@ export function StatsSidebar(props: {
             color={theme().text.feedback.success.base}
             note={`${props.state.range} ↻`}
             noteColor={theme().text.action.primary.selected}
-            noteAttributes={TextAttributes.BOLD | TextAttributes.UNDERLINE}
+            noteStyle={{ bold: true, underline: true }}
             width={width()}
             onPress={cycleRange}
           />
@@ -373,8 +371,8 @@ export function StatsSidebar(props: {
             note={`${summary()!.sessions + summary()!.subagents} sess`}
           />
           <text wrapMode="none" selectable={false}>
-            <span fg={theme().text.muted}>{pad("Steps", 8)}</span>
-            <span fg={theme().hue.accent[500]}>{spark() || "—"}</span>
+            <span style={{ fg: theme().text.muted }}>{pad("Steps", 8)}</span>
+            <span style={{ fg: theme().hue.accent[500] }}>{spark() || "—"}</span>
           </text>
         </Show>
         <text
