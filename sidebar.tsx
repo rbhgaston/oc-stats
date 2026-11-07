@@ -6,13 +6,16 @@
  * one more for the previous range, and one scoped to the current project. No message fetching.
  * The full `/stats` window remains the place for projects, sessions and latency detail.
  */
-import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js"
 import { TextAttributes } from "@opentui/core"
 import {
   dayKey,
+  loadPriceMap,
   loadSidebarSummary,
   projectLabel,
+  sessionCostSplit,
   totalTokens,
+  type CostSplit,
   type Range,
   type SidebarSummary,
 } from "./data"
@@ -70,42 +73,74 @@ function Row(props: {
 }
 
 /** A section title with a colored rule, so session/project/range read as separate blocks. */
-function Header(props: { theme: any; label: string; color: any; note?: string; width: number }) {
+function Header(props: {
+  theme: any
+  label: string
+  color: any
+  note?: string
+  noteColor?: any
+  width: number
+  onPress?: () => void
+}) {
   const left = () => (props.note ? `${props.label} ${props.note} ` : `${props.label} `)
   const rule = () => "─".repeat(Math.max(0, props.width - left().length))
   return (
-    <text wrapMode="none" selectable={false}>
+    <text wrapMode="none" selectable={false} onMouseDown={props.onPress}>
       <span fg={props.color} attributes={TextAttributes.BOLD}>{props.label}</span>
       <Show when={props.note}>
-        <span fg={props.theme.text.muted}>{` ${props.note}`}</span>
+        <span fg={props.noteColor ?? props.theme.text.muted}>{` ${props.note}`}</span>
       </Show>
       <span fg={props.theme.text.muted}>{` ${rule()}`}</span>
     </text>
   )
 }
 
-/** A proportional bar: `filled` of `total` in accent, the rest dim. */
-function BarRow(props: {
-  theme: any
-  label: string
-  filled: number
-  total: number
-  width: number
-  text: string
-}) {
-  const cells = () => Math.max(6, Math.min(18, props.width - 10 - props.text.length))
-  const on = () => {
-    if (props.total <= 0) return 0
-    return Math.max(0, Math.min(cells(), Math.round((props.filled / props.total) * cells())))
-  }
-  const empty = () => cells() - on()
+/** Split `width` cells across `values` so the rounded parts add up to exactly `width`. */
+function splitCells(values: number[], total: number, width: number): number[] {
+  if (width <= 0 || total <= 0) return values.map(() => 0)
+  const raw = values.map((value) => (value / total) * width)
+  const cells = raw.map((value) => Math.floor(value))
+  const remaining = width - cells.reduce((sum, value) => sum + value, 0)
+  const order = raw
+    .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+    .sort((a, b) => b.fraction - a.fraction)
+  for (let index = 0; index < remaining; index += 1) cells[order[index % order.length].index] += 1
+  return cells
+}
+
+/** The session's spend split by output, billed input and cached tokens, as one stacked bar. */
+function CostBar(props: { theme: any; width: number; split: CostSplit }) {
+  const colors = () => [
+    props.theme.text.feedback.warning.base,
+    props.theme.hue.accent[500],
+    props.theme.text.feedback.success.base,
+  ]
+  const values = () => [props.split.output, props.split.input, props.split.cached]
+  const cells = () => Math.max(8, props.width - 8)
+  const parts = () => splitCells(values(), props.split.total, cells())
+  const share = (value: number) => (props.split.total > 0 ? value / props.split.total : 0)
   return (
-    <text wrapMode="none" selectable={false}>
-      <span fg={props.theme.text.muted}>{pad(props.label, 8)}</span>
-      <span fg={props.theme.hue.accent[500]}>{"█".repeat(on())}</span>
-      <span fg={props.theme.text.muted}>{"░".repeat(empty())}</span>
-      <span fg={props.theme.text.base}>{`  ${props.text}`}</span>
-    </text>
+    <box flexDirection="column">
+      <text wrapMode="none" selectable={false}>
+        <span fg={props.theme.text.muted}>{pad("Spend", 8)}</span>
+        <Show
+          when={props.split.total > 0}
+          fallback={<span fg={props.theme.text.muted}>{"░".repeat(cells())}</span>}
+        >
+          <For each={parts()}>
+            {(count, index) => <span fg={colors()[index()]}>{"█".repeat(count)}</span>}
+          </For>
+        </Show>
+      </text>
+      <text wrapMode="none" selectable={false}>
+        <span fg={props.theme.text.muted}>{"        "}</span>
+        <span fg={colors()[0]}>{`out ${pct(share(values()[0]))}`}</span>
+        <span fg={props.theme.text.muted}>{" · "}</span>
+        <span fg={colors()[1]}>{`in ${pct(share(values()[1]))}`}</span>
+        <span fg={props.theme.text.muted}>{" · "}</span>
+        <span fg={colors()[2]}>{`cache ${pct(share(values()[2]))}`}</span>
+      </text>
+    </box>
   )
 }
 
@@ -121,6 +156,7 @@ export function StatsSidebar(props: {
   const [project, setProject] = createSignal<SidebarSummary>()
   const [error, setError] = createSignal("")
   const [width, setWidth] = createSignal(DEFAULT_WIDTH)
+  const [prices, setPrices] = createSignal<Map<string, any>>(new Map())
   let alive = true
   let request = 0
 
@@ -169,6 +205,9 @@ export function StatsSidebar(props: {
   })
 
   onMount(() => {
+    void loadPriceMap(props.ctx.client).then((value) => {
+      if (alive) setPrices(value)
+    })
     const timer = setInterval(() => void load(), 60_000)
     onCleanup(() => clearInterval(timer))
   })
@@ -183,6 +222,7 @@ export function StatsSidebar(props: {
     const total = read + sessionInput() + sessionCacheWrite()
     return total > 0 ? read / total : 0
   }
+  const split = createMemo(() => sessionCostSplit(session(), prices()))
   const projectName = () => {
     try {
       const projectID = session()?.projectID
@@ -236,14 +276,6 @@ export function StatsSidebar(props: {
         <text wrapMode="none" selectable={false} onMouseDown={toggle}>
           <b fg={theme().hue.accent[500]}>Stats</b>
         </text>
-        <text
-          wrapMode="none"
-          selectable={false}
-          fg={theme().text.action.primary.selected}
-          onMouseDown={cycleRange}
-        >
-          {` · ${props.state.range}`}
-        </text>
         <text wrapMode="none" selectable={false} fg={theme().text.muted} onMouseDown={toggle}>
           {props.state.open ? " ▾" : " ▸"}
         </text>
@@ -273,14 +305,14 @@ export function StatsSidebar(props: {
           <Row theme={theme()} label="Cost" value={usd(sessionCost())} color={theme().text.feedback.success.base} />
           <Row theme={theme()} label="Input" value={fmtTokens(sessionInput())} note="billed" />
           <Row theme={theme()} label="Output" value={fmtTokens(sessionOutput())} />
-          <BarRow
+          <Row
             theme={theme()}
             label="Cached"
-            filled={sessionCached()}
-            total={sessionCached() + sessionInput() + sessionCacheWrite()}
-            width={width()}
-            text={`${fmtTokens(sessionCached())} ${pct(sessionCacheHit())}`}
+            value={fmtTokens(sessionCached())}
+            note={pct(sessionCacheHit())}
+            color={theme().hue.accent[500]}
           />
+          <CostBar theme={theme()} width={width()} split={split()} />
 
           <Show when={project()}>
             <Header
@@ -303,7 +335,9 @@ export function StatsSidebar(props: {
             label="Range"
             color={theme().text.feedback.success.base}
             note={props.state.range}
+            noteColor={theme().text.action.primary.selected}
             width={width()}
+            onPress={cycleRange}
           />
           <Row
             theme={theme()}

@@ -844,3 +844,77 @@ export async function loadSidebarSummary(
     previous,
   };
 }
+
+/** Prices are static for a session, so read the model catalog once per process. */
+let priceCache: Promise<Map<string, any>> | undefined;
+
+export function loadPriceMap(client: any): Promise<Map<string, any>> {
+  if (!priceCache) {
+    priceCache = (async () => {
+      try {
+        return priceMapFrom(await client.model.list());
+      } catch {
+        return new Map<string, any>();
+      }
+    })();
+  }
+  return priceCache;
+}
+
+export interface CostSplit {
+  input: number;
+  output: number;
+  cached: number;
+  total: number;
+}
+
+/**
+ * Split a session's cost by where the tokens came from. Token counts times the model's
+ * per-million prices give the shape; scaling to the reported session cost keeps the total
+ * exact. If a model has no catalog price, fall back to the token mix.
+ */
+export function sessionCostSplit(session: any, prices: Map<string, any>): CostSplit {
+  const tokens = session?.tokens ?? {};
+  const model = session?.model ?? {};
+  const modelID = String(model.modelID ?? model.id ?? "");
+  const price = modelID
+    ? prices.get(`${model.providerID ?? ""}/${modelID}`) ?? prices.get(modelID)
+    : undefined;
+  const inputPrice = safeNumber(price?.input);
+  const outputPrice = safeNumber(price?.output);
+  const readPrice = safeNumber(price?.cache?.read ?? price?.input);
+  const writePrice = safeNumber(price?.cache?.write ?? price?.input);
+
+  const inputTokens = safeNumber(tokens.input);
+  const outputTokens = safeNumber(tokens.output);
+  const readTokens = safeNumber(tokens.cache?.read);
+  const writeTokens = safeNumber(tokens.cache?.write);
+
+  const input = (inputTokens * inputPrice) / 1_000_000;
+  const output = (outputTokens * outputPrice) / 1_000_000;
+  const cached = (readTokens * readPrice + writeTokens * writePrice) / 1_000_000;
+  const computed = input + output + cached;
+  const actual = safeNumber(session?.cost);
+
+  if (computed > 0 && actual > 0) {
+    const scale = actual / computed;
+    return {
+      input: input * scale,
+      output: output * scale,
+      cached: cached * scale,
+      total: actual,
+    };
+  }
+
+  const tokenTotal = inputTokens + outputTokens + readTokens + writeTokens;
+  if (tokenTotal > 0 && actual > 0) {
+    return {
+      input: (actual * inputTokens) / tokenTotal,
+      output: (actual * outputTokens) / tokenTotal,
+      cached: (actual * (readTokens + writeTokens)) / tokenTotal,
+      total: actual,
+    };
+  }
+
+  return { input, output, cached, total: computed };
+}
