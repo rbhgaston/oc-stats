@@ -7,6 +7,7 @@
  * The full `/stats` window remains the place for projects, sessions and latency detail.
  */
 import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js"
+import { TextAttributes } from "@opentui/core"
 import {
   dayKey,
   loadSidebarSummary,
@@ -64,6 +65,46 @@ function Row(props: {
       <Show when={props.note}>
         <span fg={props.noteColor ?? props.theme.text.muted}>{`  ${props.note}`}</span>
       </Show>
+    </text>
+  )
+}
+
+/** A section title with a colored rule, so session/project/range read as separate blocks. */
+function Header(props: { theme: any; label: string; color: any; note?: string; width: number }) {
+  const left = () => (props.note ? `${props.label} ${props.note} ` : `${props.label} `)
+  const rule = () => "─".repeat(Math.max(0, props.width - left().length))
+  return (
+    <text wrapMode="none" selectable={false}>
+      <span fg={props.color} attributes={TextAttributes.BOLD}>{props.label}</span>
+      <Show when={props.note}>
+        <span fg={props.theme.text.muted}>{` ${props.note}`}</span>
+      </Show>
+      <span fg={props.theme.text.muted}>{` ${rule()}`}</span>
+    </text>
+  )
+}
+
+/** A proportional bar: `filled` of `total` in accent, the rest dim. */
+function BarRow(props: {
+  theme: any
+  label: string
+  filled: number
+  total: number
+  width: number
+  text: string
+}) {
+  const cells = () => Math.max(6, Math.min(18, props.width - 10 - props.text.length))
+  const on = () => {
+    if (props.total <= 0) return 0
+    return Math.max(0, Math.min(cells(), Math.round((props.filled / props.total) * cells())))
+  }
+  const empty = () => cells() - on()
+  return (
+    <text wrapMode="none" selectable={false}>
+      <span fg={props.theme.text.muted}>{pad(props.label, 8)}</span>
+      <span fg={props.theme.hue.accent[500]}>{"█".repeat(on())}</span>
+      <span fg={props.theme.text.muted}>{"░".repeat(empty())}</span>
+      <span fg={props.theme.text.base}>{`  ${props.text}`}</span>
     </text>
   )
 }
@@ -136,13 +177,11 @@ export function StatsSidebar(props: {
   const sessionInput = () => Number(session()?.tokens?.input ?? 0)
   const sessionOutput = () => Number(session()?.tokens?.output ?? 0)
   const sessionCached = () => Number(session()?.tokens?.cache?.read ?? 0)
+  const sessionCacheWrite = () => Number(session()?.tokens?.cache?.write ?? 0)
   const sessionCacheHit = () => {
-    const tokens = session()?.tokens
-    if (!tokens) return 0
-    const read = Number(tokens.cache?.read ?? 0)
-    const input = Number(tokens.input ?? 0)
-    const write = Number(tokens.cache?.write ?? 0)
-    return read + input + write > 0 ? read / (read + input + write) : 0
+    const read = sessionCached()
+    const total = read + sessionInput() + sessionCacheWrite()
+    return total > 0 ? read / total : 0
   }
   const projectName = () => {
     try {
@@ -225,28 +264,50 @@ export function StatsSidebar(props: {
           </text>
         </Show>
         <Show when={summary()} fallback={<text fg={theme().text.muted}>Loading stats…</text>}>
-          <Row theme={theme()} label="Session" value={usd(sessionCost())} />
-          <Row theme={theme()} label="Input" value={fmtTokens(sessionInput())} />
+          <Header
+            theme={theme()}
+            label="Session"
+            color={theme().hue.accent[500]}
+            width={width()}
+          />
+          <Row theme={theme()} label="Cost" value={usd(sessionCost())} color={theme().text.feedback.success.base} />
+          <Row theme={theme()} label="Input" value={fmtTokens(sessionInput())} note="billed" />
           <Row theme={theme()} label="Output" value={fmtTokens(sessionOutput())} />
-          <Row
+          <BarRow
             theme={theme()}
             label="Cached"
-            value={fmtTokens(sessionCached())}
-            note={pct(sessionCacheHit())}
-            color={theme().hue.accent[500]}
+            filled={sessionCached()}
+            total={sessionCached() + sessionInput() + sessionCacheWrite()}
+            width={width()}
+            text={`${fmtTokens(sessionCached())} ${pct(sessionCacheHit())}`}
           />
+
           <Show when={project()}>
-            <Row
+            <Header
               theme={theme()}
               label="Project"
-              value={usd(project()!.cost)}
+              color={theme().text.feedback.warning.base}
               note={projectName()}
+              width={width()}
+            />
+            <Row
+              theme={theme()}
+              label="Cost"
+              value={usd(project()!.cost)}
               color={theme().text.feedback.success.base}
             />
           </Show>
-          <Row
+
+          <Header
             theme={theme()}
             label="Range"
+            color={theme().text.feedback.success.base}
+            note={props.state.range}
+            width={width()}
+          />
+          <Row
+            theme={theme()}
+            label="Cost"
             value={usd(summary()!.cost)}
             note={costNote()}
             noteColor={costNoteColor()}

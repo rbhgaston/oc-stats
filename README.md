@@ -65,10 +65,13 @@ Requires OpenCode 2.2.5 or newer.
 ### Sidebar
 
 - A compact `Stats` panel in the session sidebar, built from a couple of cheap stats requests.
-- Ordered from local to global: the current session first (cost, input/output tokens, cached
-  tokens with both the count and the percentage), then the current project's cost, then the
-  selected range's cost, tokens/cache hit, tool calls/error rate, streak, sessions and a
-  daily-steps sparkline.
+- Colored section rules keep **Session**, **Project** and **Range** visually separate.
+- Ordered from local to global: the current session first (cost, billed input, output, and a
+  cached-share bar with the cached count and percentage), then the current project's cost,
+  then the selected range's cost, tokens/cache hit, tool calls/error rate, streak, sessions
+  and a daily-steps sparkline.
+- `Input` is the billed input only; cache reads are shown separately, so cached tokens often
+  look larger than input. The bar shows the cached share of the real input total.
 - Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
 - Click `Stats` to fold or unfold the panel, click the range next to it to cycle, or click
   `open /stats` for the full dashboard.
