@@ -8,3 +8,4 @@ dist/
 *.tsbuildinfo
 TODO.md
 package-lock.json
+AGENTS.md
