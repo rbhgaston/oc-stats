@@ -22,7 +22,6 @@ import {
   type Range,
   type SessionData,
   type SortKey,
-  type ToolCall,
 } from "./data"
 import {
   date,
@@ -181,22 +180,6 @@ function sortProjects(projects: ProjectData[], key: SortKey): ProjectData[] {
       list.sort((a, b) => b.cost - a.cost)
   }
   return list
-}
-
-function StatText(props: {
-  label: string
-  value: string
-  labelWidth?: number
-  valueWidth?: number
-  theme: any
-  accent?: any
-}) {
-  return (
-    <text wrapMode="none" selectable={false}>
-      <span style={{ fg: props.theme.text.muted }}>{pad(props.label, props.labelWidth ?? 14)}</span>
-      <span style={{ fg: props.accent ?? props.theme.text.base }}>{pad(props.value, props.valueWidth ?? 14)}</span>
-    </text>
-  )
 }
 
 function Section(props: { title: string; theme: any; children: any; right?: any }) {
@@ -898,14 +881,14 @@ function StatsApp(props: { ctx: any }) {
   function chooseTab(next: TabID) {
     setTab(next)
     setFocus(0)
-    void setSaved((draft) => {
+    void setSaved((draft: any) => {
       draft.tab = next
     })
   }
 
   function chooseRange(next: Range) {
     setRange(next)
-    void setSaved((draft) => {
+    void setSaved((draft: any) => {
       draft.range = next
     })
     void load()
@@ -913,14 +896,14 @@ function StatsApp(props: { ctx: any }) {
 
   function chooseMetric(next: Metric) {
     setMetric(next)
-    void setSaved((draft) => {
+    void setSaved((draft: any) => {
       draft.metric = next
     })
   }
 
   function chooseSort(next: SortKey) {
     setSort(next)
-    void setSaved((draft) => {
+    void setSaved((draft: any) => {
       draft.sort = next
     })
   }

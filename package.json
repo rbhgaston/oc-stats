@@ -29,6 +29,9 @@
     "latency",
     "observability"
   ],
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "exports": {
     "./tui": "./tui.tsx"
   },
@@ -42,6 +45,9 @@
   ],
   "dependencies": {
     "@opencode/plugin": "^2.2.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "@opentui/core": ">=0.6.6",
