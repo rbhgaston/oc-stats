@@ -74,8 +74,8 @@ Requires OpenCode 2.2.5 or newer.
   in its own color. `Input` is billed input only; cache reads are separate, so cached tokens
   often look larger than input.
 - Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
-- Click `Stats` to fold or unfold the panel, click the range in the **Range** header to cycle
-  it, or click `open /stats` for the full dashboard.
+- Click `Stats` to fold or unfold the panel, click the underlined `24h ↻` selector in the
+  **Range** header to cycle it, or click `open /stats` for the full dashboard.
 
 ## Keys
 

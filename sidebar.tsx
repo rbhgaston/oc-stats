@@ -6,7 +6,7 @@
  * one more for the previous range, and one scoped to the current project. No message fetching.
  * The full `/stats` window remains the place for projects, sessions and latency detail.
  */
-import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js"
 import { TextAttributes } from "@opentui/core"
 import {
   dayKey,
@@ -79,6 +79,7 @@ function Header(props: {
   color: any
   note?: string
   noteColor?: any
+  noteAttributes?: number
   width: number
   onPress?: () => void
 }) {
@@ -88,7 +89,10 @@ function Header(props: {
     <text wrapMode="none" selectable={false} onMouseDown={props.onPress}>
       <span fg={props.color} attributes={TextAttributes.BOLD}>{props.label}</span>
       <Show when={props.note}>
-        <span fg={props.noteColor ?? props.theme.text.muted}>{` ${props.note}`}</span>
+        <span
+          fg={props.noteColor ?? props.theme.text.muted}
+          attributes={props.noteAttributes ?? TextAttributes.NONE}
+        >{` ${props.note}`}</span>
       </Show>
       <span fg={props.theme.text.muted}>{` ${rule()}`}</span>
     </text>
@@ -127,9 +131,9 @@ function CostBar(props: { theme: any; width: number; split: CostSplit }) {
           when={props.split.total > 0}
           fallback={<span fg={props.theme.text.muted}>{"░".repeat(cells())}</span>}
         >
-          <For each={parts()}>
-            {(count, index) => <span fg={colors()[index()]}>{"█".repeat(count)}</span>}
-          </For>
+          <span fg={colors()[0]}>{"█".repeat(parts()[0])}</span>
+          <span fg={colors()[1]}>{"█".repeat(parts()[1])}</span>
+          <span fg={colors()[2]}>{"█".repeat(parts()[2])}</span>
         </Show>
       </text>
       <text wrapMode="none" selectable={false}>
@@ -334,8 +338,9 @@ export function StatsSidebar(props: {
             theme={theme()}
             label="Range"
             color={theme().text.feedback.success.base}
-            note={props.state.range}
+            note={`${props.state.range} ↻`}
             noteColor={theme().text.action.primary.selected}
+            noteAttributes={TextAttributes.BOLD | TextAttributes.UNDERLINE}
             width={width()}
             onPress={cycleRange}
           />
