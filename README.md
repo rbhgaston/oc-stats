@@ -1,81 +1,107 @@
+<div align="center">
+
 # oc-stats
 
-A colorful usage, cost and latency dashboard for [OpenCode](https://opencode.ai)'s terminal UI.
+**Your OpenCode usage, cost and latency — at a glance, in the terminal.**
 
-```
-/stats
-```
+A fast, local dashboard for [OpenCode](https://opencode.ai): a session-first sidebar panel
+and a full `/stats` window with trends, projects, models and latency.
+No telemetry. No account. No database writes.
 
-It reads OpenCode's own usage history through the running server and shows it in three
-clickable tabs: **Overview**, **Projects** and **Performance**. A compact **Stats** panel in
-the session sidebar keeps the current range's cost, tokens and tool health one glance away.
-No telemetry, no external service, no database writes.
+[![OpenCode 2.2.5+](https://img.shields.io/badge/opencode-2.2.5%2B-9a83e6?style=flat-square)](https://opencode.ai)
+[![npm](https://img.shields.io/npm/v/oc-stats-tui?style=flat-square&color=7fd88f)](https://www.npmjs.com/package/oc-stats-tui)
+[![License: MIT](https://img.shields.io/badge/license-MIT-f5a742?style=flat-square)](LICENSE)
+[![No telemetry](https://img.shields.io/badge/telemetry-none-f7768e?style=flat-square)](#privacy)
+
+<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/preview.svg" alt="The oc-stats sidebar panel next to the Overview dashboard" width="100%">
+
+</div>
 
 ## Install
 
-Clone it into your global OpenCode plugins directory:
+```bash
+opencode plugin add oc-stats-tui
+```
+
+Reload OpenCode (`/reload`), then type:
+
+```bash
+/stats
+```
+
+> Requires OpenCode **2.2.5+**. `oc-stats-tui` is a TUI plugin, so the CLI adds it to
+> `~/.config/opencode/cli.json`.
+
+<details>
+<summary><b>Install from source</b></summary>
 
 ```bash
 git clone https://github.com/rbhgaston/oc-stats.git ~/.config/opencode/plugins/oc-stats
 ```
 
-Then make sure the plugin is listed in `~/.config/opencode/cli.json`:
+Add it to `plugins` in `~/.config/opencode/cli.json`:
 
 ```json
 {
-  "plugins": [
-    "./plugins/oc-stats"
-  ]
+  "plugins": ["./plugins/oc-stats"]
 }
 ```
 
-OpenCode also discovers plugins under `<global-config>/plugins/`, so the `cli.json` entry is
-only needed if your setup does not pick it up automatically.
+</details>
 
-Restart the TUI (or run `/reload`), then type `/stats`.
+## Why oc-stats?
 
-Requires OpenCode 2.2.5 or newer.
+| | |
+| --- | --- |
+| 💸 **Know what a session costs** | Cost, billed input, output and cached tokens — plus a spend bar split by output, input and cache. |
+| 🔎 **Find what is expensive** | Per-project and per-session cost, cache savings and the models that eat your budget. |
+| ⚡ **Find what is slow** | TTFT, model-call latency, full step latency and output tokens/sec, with p50/p95/p99. |
+| 📈 **See the trend** | Daily heatmap, sparkline and a comparison with the previous period. |
+| 🔒 **Trust the numbers** | Local-only. Talks to your OpenCode server, nothing else. |
 
-## What you get
+## The sidebar
+
+<img src="https://raw.githubusercontent.com/rbhgaston/oc-stats/main/docs/sidebar.svg" alt="The oc-stats panel in the session sidebar" width="300" align="right">
+
+The sidebar is ordered from local to global, so the number you care about is always first:
+
+- **Session** — cost, billed input, output, cached tokens (count and percentage) and a
+  spend bar split by output, billed input and cached tokens.
+- **Project** — the current project's cost for the selected range.
+- **Range** — cost with the change against the previous range, total tokens and cache hit,
+  tool calls and error rate, streak, sessions and a daily-steps sparkline.
+
+Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
+
+Click `Stats` to fold or unfold the panel, click the underlined range in the **Range** header
+to cycle it, or click `open /stats` for the full dashboard.
+
+<br clear="all">
+
+## The dashboard
 
 ### Overview
 
-- Cost, input/output/reasoning tokens, cache read/write, cached input %, cache savings.
+- Cost, input/output/reasoning tokens, cache read/write, cached input % and cache savings.
 - Sessions, subagents, prompts, steps, active days and streak.
-- Heatmap switchable between **cost**, **tokens** and **steps**.
-- Daily sparkline, top models, previous-period comparison.
+- A heatmap you can switch between **cost**, **tokens** and **steps**.
+- Daily sparkline, top models and previous-period comparison.
 
 ### Projects
 
 - Sortable project table: sessions, cost, tokens, average cost per session, wall time,
-  p50 call latency, last activity.
-- Click a project to fold/unfold its sessions.
-- Click a session to expand: wall/busy/idle time, prompts, steps, tool calls and errors,
-  token split, cost, cache savings, TTFT, call latency, output speed, slowest calls,
-  recent messages and subagents.
-- Open the selected session directly with `o` or the `open session` line.
+  p50 call latency and last activity.
+- Click a project to fold or unfold its sessions.
+- Expand a session for wall/busy/idle time, prompts, steps, tools and errors, token split,
+  cost, cache savings, TTFT, call latency, output speed, slowest calls and subagents.
+- Open the selected session with `o` or the `open session` line.
 
 ### Performance
 
-- TTFT, model call duration, full step duration, output tokens/sec and tool duration.
+- TTFT, model-call duration, full step duration, output tokens/sec and tool duration.
 - Per-project comparison table.
-- Slowest model calls and slowest tool calls, with wait/execution split.
+- Slowest model and tool calls, with the wait/execution split.
 - Session time split: wall, busy and idle.
-
-### Sidebar
-
-- A compact `Stats` panel in the session sidebar, built from a couple of cheap stats requests.
-- Colored section rules keep **Session**, **Project** and **Range** visually separate.
-- Ordered from local to global: the current session first (cost, billed input, output, cached
-  tokens with count and percentage), then the current project's cost, then the selected
-  range's cost, tokens/cache hit, tool calls/error rate, streak, sessions and a daily-steps
-  sparkline.
-- The session **Spend** bar splits the cost by output, billed input and cached tokens, each
-  in its own color. `Input` is billed input only; cache reads are separate, so cached tokens
-  often look larger than input.
-- Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
-- Click `Stats` to fold or unfold the panel, click the underlined `24h ↻` selector in the
-  **Range** header to cycle it, or click `open /stats` for the full dashboard.
 
 ## Keys
 
@@ -95,45 +121,85 @@ Requires OpenCode 2.2.5 or newer.
 Tabs, ranges, metric options, project headers, session rows and sort headers are clickable.
 The mouse wheel scrolls the content.
 
-## Data and privacy
+## Privacy
 
-The plugin talks only to the OpenCode server it is attached to, using the same client the TUI
-uses. It does not send anything anywhere else, has no analytics, and does not read the
-database directly.
+`oc-stats` talks only to the OpenCode server it is attached to, using the same client the TUI
+uses. It has no analytics, sends nothing anywhere else, and never reads or writes the database
+directly.
 
 It reads:
 
-- `experimental.session.stats` — totals, per-model usage, tool reliability, daily activity
+- `experimental.session.stats` — totals, per-model usage, tool reliability and daily activity
 - `project.list` — project names and paths
 - `session.list` — per-session cost and token totals
-- `message.list` — completed assistant calls, TTFT, step durations, tool calls
-- `model.list` — token prices for cache-savings estimates
+- `message.list` — completed assistant calls, TTFT, step durations and tool calls
+- `model.list` — token prices for cache savings and the spend split
 
-Project names, session titles, model names and paths are displayed locally in your terminal.
-They are not included in this repository or sent to the author.
+Project names, session titles, model names and paths stay in your terminal. Messages are fetched
+lazily for sessions touched in the selected range, four requests at a time, and only completed
+assistant calls are counted.
 
-Messages are fetched lazily for sessions touched in the selected range, four requests at a
-time. Only completed assistant calls are counted.
+The only thing stored is your view preference (active tab, range and heatmap metric) in
+OpenCode's plugin storage.
 
-## Metric notes
+## FAQ
+
+<details>
+<summary><b>Why is cached larger than input?</b></summary>
+
+`Input` is the **billed** input only. Cache reads are reported separately, so a long session
+can show far more cached tokens than fresh input. The **Spend** bar weights each bucket by the
+model's price, so it shows what you actually paid for output, input and cache.
+
+</details>
+
+<details>
+<summary><b>Does it show my OpenRouter credit?</b></summary>
+
+No. `oc-stats` is about usage, cost and latency. Account limits live in the quota plugin.
+
+</details>
+
+<details>
+<summary><b>Does it work with a remote server?</b></summary>
+
+Yes. TUI plugins are configured in `cli.json` and stay active when the TUI is connected to a
+remote OpenCode server.
+
+</details>
+
+<details>
+<summary><b>How are the numbers calculated?</b></summary>
 
 - **TTFT** = `time.streamed − time.created`.
 - **Model call duration** = time until the model hands off to its first tool call.
 - **Step duration** = the full assistant step, including tool calls.
 - Percentiles exclude calls over 10 minutes so idle gaps do not distort them.
-- Cache savings use the current model catalog prices and estimate what the cached tokens
-  would have cost at the full input rate.
-- OpenRouter credit balance is not included; use the quota plugin for account limits.
+- **Cache savings** estimate what cached tokens would have cost at the full input rate.
+- The **spend split** uses the current catalog prices, then scales to the session's reported
+  cost so the total stays exact.
 
-## Files
+</details>
 
+## Development
+
+```bash
+git clone https://github.com/rbhgaston/oc-stats.git ~/.config/opencode/plugins/oc-stats
+cd ~/.config/opencode/plugins/oc-stats
 ```
-package.json  package metadata and ./tui export
-tui.tsx       command, dialog, tabs, interaction
-sidebar.tsx   the compact Stats panel in the session sidebar
-data.ts       OpenCode API reads and aggregation
-format.ts     display formatting
-```
+
+Edit the source, then run `/reload` in OpenCode to pick up the changes.
+
+| file | role |
+| --- | --- |
+| `tui.tsx` | command, dialog, tabs and interaction |
+| `sidebar.tsx` | the compact Stats panel in the session sidebar |
+| `data.ts` | OpenCode API reads and aggregation |
+| `format.ts` | display formatting |
+| `docs/` | README previews and their generator |
+
+Issues and pull requests are welcome at
+[github.com/rbhgaston/oc-stats](https://github.com/rbhgaston/oc-stats).
 
 ## License
 

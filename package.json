@@ -1,7 +1,7 @@
 {
-  "name": "oc-stats",
+  "name": "oc-stats-tui",
   "version": "0.1.0",
-  "description": "A colorful usage, cost and latency dashboard for OpenCode's TUI.",
+  "description": "A colorful usage, cost and latency dashboard for OpenCode's terminal UI.",
   "license": "MIT",
   "author": "oc-stats contributors",
   "type": "module",
@@ -16,12 +16,17 @@
   "keywords": [
     "opencode",
     "opencode-plugin",
+    "opencode-tui",
     "plugin",
     "tui",
     "usage",
     "stats",
+    "dashboard",
     "cost",
+    "spend",
     "tokens",
+    "cache",
+    "latency",
     "observability"
   ],
   "exports": {
