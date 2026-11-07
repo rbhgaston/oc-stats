@@ -29,6 +29,7 @@
   },
   "files": [
     "tui.tsx",
+    "sidebar.tsx",
     "data.ts",
     "format.ts",
     "README.md",

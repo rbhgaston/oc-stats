@@ -36,6 +36,7 @@ import {
   truncate,
   usd,
 } from "./format"
+import { StatsSidebar } from "./sidebar"
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -45,6 +46,7 @@ const TABS = [
 type TabID = (typeof TABS)[number]["id"]
 
 const RANGES: Array<{ id: Range; label: string }> = [
+  { id: "24h", label: "24h" },
   { id: "7d", label: "7d" },
   { id: "30d", label: "30d" },
   { id: "90d", label: "90d" },
@@ -1153,6 +1155,29 @@ const plugin = Plugin.define({
         },
       ],
     }))
+
+    // Storage is first read when the panel draws, matching how the reference quota plugin behaves.
+    let sidebarStore: any
+    const sidebar = () =>
+      (sidebarStore ??= context.storage.store("sidebar", {
+        initial: { open: true, range: "24h" as Range },
+      }))
+    const disposeSidebar = context.ui.slot({
+      append: "sidebar.content",
+      render: (props: { sessionID: string }) => {
+        const [state, update] = sidebar()
+        return (
+          <StatsSidebar
+            ctx={context}
+            sessionID={props.sessionID}
+            state={state}
+            update={update}
+            openStats={open}
+          />
+        )
+      },
+    })
+    return () => disposeSidebar()
   },
 })
 

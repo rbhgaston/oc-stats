@@ -4,7 +4,7 @@
  * database or depends on its schema.
  */
 
-export type Range = "7d" | "30d" | "90d" | "all";
+export type Range = "24h" | "7d" | "30d" | "90d" | "all";
 export type Metric = "cost" | "tokens" | "steps";
 export type SortKey = "cost" | "sessions" | "tokens" | "avg" | "wall" | "p50" | "last" | "name";
 
@@ -176,10 +176,10 @@ export function rangeWindow(range: Range, now = Date.now()) {
   if (range === "all") {
     return { from: 0, to: now, prevFrom: undefined as number | undefined, prevTo: undefined as number | undefined, label: "all time", days: 0 };
   }
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
+  const days = range === "24h" ? 1 : range === "7d" ? 7 : range === "30d" ? 30 : 90;
   const to = now;
   const from = now - days * DAY_MS;
-  return { from, to, prevFrom: from - days * DAY_MS, prevTo: from, label: `last ${days} days`, days };
+  return { from, to, prevFrom: from - days * DAY_MS, prevTo: from, label: range === "24h" ? "last 24 hours" : `last ${days} days`, days };
 }
 
 export function emptyTokens(): Tokens {
@@ -305,7 +305,7 @@ async function listMessages(client: any, sessionID: string): Promise<any[]> {
   return messages;
 }
 
-function projectLabel(project: any): string {
+export function projectLabel(project: any): string {
   if (!project) return "global";
   if (typeof project.name === "string" && project.name.trim()) return project.name.trim();
   const path = String(project.canonical ?? project.worktree ?? "").replace(/\/+$/, "");
@@ -756,5 +756,91 @@ export async function loadDashboard(
     latency,
     slowestCalls: [...calls].sort((a, b) => b.duration - a.duration).slice(0, 20),
     slowestTools: [...tools].sort((a, b) => b.duration - a.duration).slice(0, 20),
+  };
+}
+
+/** A cheap range summary for the sidebar: one stats request, no message fetches. */
+export interface SidebarSummary {
+  range: Range;
+  window: ReturnType<typeof rangeWindow>;
+  cost: number;
+  tokens: Tokens;
+  prompts: number;
+  steps: number;
+  sessions: number;
+  subagents: number;
+  activeDays: number;
+  streak: number;
+  cacheHit: number;
+  tools: { calls: number; succeeded: number; failed: number; unfinished: number };
+  activity: Array<{ date: string; steps: number }>;
+  previous?: { cost: number; steps: number };
+}
+
+export async function loadSidebarSummary(
+  client: any,
+  range: Range,
+  options: { project?: string; previous?: boolean } = {},
+  now = Date.now(),
+): Promise<SidebarSummary> {
+  const win = rangeWindow(range, now);
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const query: any = { to: win.to, timezone, tools: options.previous === false ? "none" : "summary" };
+  if (win.from > 0) query.from = win.from;
+  if (options.project) query.project = options.project;
+  const response = await client.experimental.session.stats(query);
+  const stats: any = response?.data ?? response ?? {};
+
+  let previous: SidebarSummary["previous"];
+  if (options.previous !== false && win.prevFrom !== undefined && win.prevTo !== undefined) {
+    const priorResponse = await client.experimental.session.stats({
+      from: win.prevFrom,
+      to: win.prevTo,
+      timezone,
+      tools: "none",
+    }).catch(() => undefined);
+    const prior: any = priorResponse?.data ?? priorResponse;
+    if (prior) previous = { cost: safeNumber(prior.cost), steps: safeNumber(prior.steps) };
+  }
+
+  const tokens: Tokens = {
+    input: safeNumber(stats.tokens?.input),
+    output: safeNumber(stats.tokens?.output),
+    reasoning: safeNumber(stats.tokens?.reasoning),
+    cache: {
+      read: safeNumber(stats.tokens?.cache?.read),
+      write: safeNumber(stats.tokens?.cache?.write),
+    },
+  };
+  const totals = stats.tools?.totals ?? stats.tools ?? {};
+  const activity = Array.isArray(stats.activity)
+    ? stats.activity
+        .map((item: any) => ({ date: String(item?.date ?? ""), steps: safeNumber(item?.steps) }))
+        .filter((item: { date: string }) => item.date !== "")
+    : [];
+
+  return {
+    range,
+    window: win,
+    cost: safeNumber(stats.cost),
+    tokens,
+    prompts: safeNumber(stats.prompts),
+    steps: safeNumber(stats.steps),
+    sessions: safeNumber(stats.sessions),
+    subagents: safeNumber(stats.subagents),
+    activeDays: safeNumber(stats.activeDays),
+    streak: safeNumber(stats.streak),
+    cacheHit:
+      tokens.cache.read + tokens.input + tokens.cache.write > 0
+        ? tokens.cache.read / (tokens.cache.read + tokens.input + tokens.cache.write)
+        : 0,
+    tools: {
+      calls: safeNumber(totals.calls),
+      succeeded: safeNumber(totals.succeeded),
+      failed: safeNumber(totals.failed),
+      unfinished: safeNumber(totals.unfinished),
+    },
+    activity,
+    previous,
   };
 }

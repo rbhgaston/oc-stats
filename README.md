@@ -7,8 +7,9 @@ A colorful usage, cost and latency dashboard for [OpenCode](https://opencode.ai)
 ```
 
 It reads OpenCode's own usage history through the running server and shows it in three
-clickable tabs: **Overview**, **Projects** and **Performance**. No telemetry, no external
-service, no database writes.
+clickable tabs: **Overview**, **Projects** and **Performance**. A compact **Stats** panel in
+the session sidebar keeps the current range's cost, tokens and tool health one glance away.
+No telemetry, no external service, no database writes.
 
 ## Install
 
@@ -60,6 +61,17 @@ Requires OpenCode 2.2.5 or newer.
 - Per-project comparison table.
 - Slowest model calls and slowest tool calls, with wait/execution split.
 - Session time split: wall, busy and idle.
+
+### Sidebar
+
+- A compact `Stats` panel in the session sidebar, built from a couple of cheap stats requests.
+- Ordered from local to global: the current session first (cost, input/output tokens, cached
+  tokens with both the count and the percentage), then the current project's cost, then the
+  selected range's cost, tokens/cache hit, tool calls/error rate, streak, sessions and a
+  daily-steps sparkline.
+- Ranges: `24h`, `7d`, `30d`, `90d`, `all`.
+- Click `Stats` to fold or unfold the panel, click the range next to it to cycle, or click
+  `open /stats` for the full dashboard.
 
 ## Keys
 
@@ -114,6 +126,7 @@ time. Only completed assistant calls are counted.
 ```
 package.json  package metadata and ./tui export
 tui.tsx       command, dialog, tabs, interaction
+sidebar.tsx   the compact Stats panel in the session sidebar
 data.ts       OpenCode API reads and aggregation
 format.ts     display formatting
 ```
